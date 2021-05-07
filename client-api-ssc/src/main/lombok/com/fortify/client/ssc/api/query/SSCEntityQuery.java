@@ -36,34 +36,40 @@ import com.fortify.util.rest.query.AbstractRestConnectionQueryBuilder;
 import com.fortify.util.rest.query.PagingData;
 
 /**
- * This class provides SSC-specific functionality for handling paging and processing REST responses.
- * Usually this class is instantiated through the various build() methods provided by the 
- * query builder implementations in the {@link  com.fortify.client.ssc.api.query.builder}
- * package.
+ * This class provides SSC-specific functionality for handling paging and
+ * processing REST responses. Usually this class is instantiated through the
+ * various build() methods provided by the query builder implementations in the
+ * {@link com.fortify.client.ssc.api.query.builder} package.
  * 
  * @author Ruud Senden
  */
 public class SSCEntityQuery extends AbstractRestConnectionQuery<JSONMap> {
-	public SSCEntityQuery(AbstractRestConnectionQueryBuilder<SSCAuthenticatingRestConnection,?> config) {
+	public SSCEntityQuery(AbstractRestConnectionQueryBuilder<SSCAuthenticatingRestConnection, ?> config) {
 		super(config);
 	}
 
 	@Override
 	protected WebTarget updateWebTargetWithPagingData(WebTarget target, PagingData pagingData) {
-		return target.queryParam("start", ""+pagingData.getNextPageStart()).queryParam("limit", ""+pagingData.getNextPageSize());
+		return target.queryParam("start", "" + pagingData.getNextPageStart()).queryParam("limit",
+				"" + pagingData.getNextPageSize());
 	}
-	
+
 	@Override
 	protected void updatePagingDataFromResponse(PagingData pagingData, JSONMap data) {
-		pagingData.setTotalAvailable( data.get("count", Integer.class) );
+		if (data.containsKey("count")) {
+			pagingData.setTotalAvailable(data.get("count", Integer.class));
+		} else {
+			pagingData.setTotalAvailable(1);
+		}
+		// pagingData.setTotalAvailable( data.get("count", Integer.class) );
 	}
-	
+
 	@Override
 	protected JSONList getJSONListFromResponse(JSONMap json) {
 		Object data = json.get("data", Object.class);
-		return (data instanceof JSONList) ? (JSONList)data : new JSONList(Arrays.asList(data));
+		return (data instanceof JSONList) ? (JSONList) data : new JSONList(Arrays.asList(data));
 	}
-	
+
 	@Override
 	protected Class<JSONMap> getResponseTypeClass() {
 		return JSONMap.class;
